@@ -1,0 +1,83 @@
+namespace dart todo_transport
+namespace java todo_transport.v1
+
+/** Represents time as milliseconds since the epoch */
+typedef i64 Timestamp
+
+/** Used at Workiva to identify account, membership, and user ids */
+typedef string ResourceID
+
+/** An error raised by a Workiva service */
+exception WError {
+    /** Identifying code for the error */
+    1:i64 code,
+
+    /** Descriptive error message */
+    2:string message,
+}
+
+struct Todo {
+    /** User that created the Todo */
+    1:ResourceID userID,
+
+    /** Todo title */
+    2:string description,
+
+    /** Due date (milliseconds since epoch) */
+    3:Timestamp dueDate,
+
+    /** Todo ID */
+    4:string id,
+
+    /** Whether or not the Todo has been marked as completed */
+    5:bool isCompleted,
+
+    /** Whether or not the Todo is public (viewable by all users) */
+    6:bool isPublic,
+
+    /** Todo notes */
+    7:string notes,
+
+    /** Account of the user that created the Todo */
+    8:ResourceID accountID,
+}
+
+/** Parameters for querying todo */
+struct TodoQueryParams {
+    1:bool includePublic,
+    2:bool includePrivate,
+    3:bool includeComplete,
+    4:bool includeIncomplete,
+}
+
+service TodoService {
+    /**
+    Creates the requested Todo. Returns the representation of the
+    created Todo with a generated ID and the userId attached.
+    */
+    Todo createTodo(1:Todo todo) throws (1:WError err)
+
+    /**
+    Deletes the Todo identified by todoId as long as the given user
+    is also the creator.
+    */
+    void deleteTodo(1:string todoID) throws (1:WError err)
+
+    /**
+    Query for a set of Todos based on the isCompleted and isPublic
+    values.
+    */
+    list<Todo> queryTodos(1:TodoQueryParams params) throws (1:WError err)
+
+    /**
+    Updates the requested Todo as long as the given user is also the
+    creator.
+    */
+    Todo updateTodo(1:Todo todo) throws (1:WError err)
+}
+
+scope Todos prefix {account}.{membership} {
+    TodoCreated: Todo
+    TodoDeleted: Todo
+    TodoUpdated: Todo
+}
