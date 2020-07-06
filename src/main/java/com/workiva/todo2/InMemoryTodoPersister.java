@@ -15,12 +15,12 @@ import todo_transport.v1.TodoQueryParams;
 import todo_transport.v1.WError;
 
 /**
- * Horrible antipattern singleton-esque persister
+ * Horrible anti-pattern singleton-esque persister
  */
 public class InMemoryTodoPersister {
-    // leaving this public purely for demo
     private HashMap<String, Todo> todoStore;
 
+    // horrible anti-pattern sadness
     private static InMemoryTodoPersister instance;
 
     public static Todo createTodo(Todo todo) {
