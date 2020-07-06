@@ -2,3 +2,6 @@
 .project
 .settings/
 .vscode/
+.idea/
+todo2.iml
+target/
