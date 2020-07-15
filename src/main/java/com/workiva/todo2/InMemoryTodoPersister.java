@@ -29,11 +29,11 @@ public class InMemoryTodoPersister {
         return todo;
     }
 
-    public static void deleteTodo(String todoId) throws TException, WError {
+    public static Todo deleteTodo(String todoId) throws TException, WError {
         if (!getInstance().todoStore.containsKey(todoId)) {
             throw new WError(1,"No such entry with ID: " + todoId);
         }
-        getInstance().todoStore.remove(todoId);
+        return getInstance().todoStore.remove(todoId);
     }
 
     public static List<Todo> queryTodos(TodoQueryParams params) throws TException, WError {

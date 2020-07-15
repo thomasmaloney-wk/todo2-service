@@ -4,10 +4,7 @@ import com.workiva.frugal.FContext;
 import com.workiva.messaging_sdk.exception.IamException;
 import com.workiva.messaging_sdk.iam.IamContext;
 
-import todo_transport.v1.FTodoService;
-import todo_transport.v1.Todo;
-import todo_transport.v1.TodoQueryParams;
-import todo_transport.v1.WError;
+import todo_transport.v1.*;
 
 import org.apache.thrift.TException;
 
@@ -23,32 +20,59 @@ import java.util.List;
  */
 public class FTodoServiceHandler implements FTodoService.Iface {
     private static final Logger LOG = LoggerFactory.getLogger(FTodoServiceHandler.class);
+    private final TodosPublisher.Iface publisher;
+
+    public FTodoServiceHandler(TodosPublisher.Iface publisherClient) {
+        publisher = publisherClient;
+    }
 
     @Override
     public Todo createTodo(FContext ctx, Todo todo) throws TException, WError {
         authorize(ctx);
+        IamUserInfoTuple iamInfo = getUserInfo(ctx);
+        todo.setAccountID(iamInfo.getAccountId());
+        todo.setUserID(iamInfo.getUserId());
         InMemoryTodoPersister.createTodo(todo);
+        publisher.publishTodoCreated(ctx, iamInfo.getAccountId(), iamInfo.getMembershipId(),todo);
         return null;
     }
 
     @Override
     public void deleteTodo(FContext ctx, String todoID) throws TException, WError {
         authorize(ctx);
-        InMemoryTodoPersister.deleteTodo(todoID);
+        IamUserInfoTuple iamInfo = getUserInfo(ctx);
+        Todo todo = InMemoryTodoPersister.deleteTodo(todoID);
+        publisher.publishTodoDeleted(ctx, iamInfo.getAccountId(), iamInfo.getMembershipId(), todo);
     }
 
     @Override
     public List<Todo> queryTodos(FContext ctx, TodoQueryParams params) throws TException, WError {
         authorize(ctx);
-        List<Todo> results = InMemoryTodoPersister.queryTodos(params);
-        return results;
+        return InMemoryTodoPersister.queryTodos(params);
     }
 
     @Override
     public Todo updateTodo(FContext ctx, Todo todo) throws TException, WError {
         authorize(ctx);
+        IamUserInfoTuple iamInfo = getUserInfo(ctx);
         InMemoryTodoPersister.updateTodo(todo);
+        publisher.publishTodoUpdated(ctx, iamInfo.getAccountId(), iamInfo.getMembershipId(), todo);
         return null;
+    }
+
+    protected IamUserInfoTuple getUserInfo(FContext ctx) throws TException {
+        try {
+            IamContext iam = new IamContext(ctx);
+            IamUserInfoTuple ret = new IamUserInfoTuple();
+            ret.setUserId(iam.getUserId());
+            ret.setAccountId(iam.getAccountId());
+            ret.setMembershipId(iam.getMembershipId());
+            return ret;
+        } catch (IamException ie) {
+            TException err = new TException("Invalid IamContext", ie);
+            LOG.error("authentication error", err);
+            throw err;
+        }
     }
 
     protected void authorize(FContext ctx) throws TException {
@@ -70,3 +94,4 @@ public class FTodoServiceHandler implements FTodoService.Iface {
         return true; //lmao implying I'm gonna do authorization
     }
 }
+
