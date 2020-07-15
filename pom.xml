@@ -3,7 +3,7 @@
 
     <groupId>com.workiva</groupId>
     <artifactId>todo2</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.3</version>
 
     <repositories>
         <repository>
