@@ -32,9 +32,9 @@ public class FTodoServiceHandler implements FTodoService.Iface {
         IamUserInfoTuple iamInfo = getUserInfo(ctx);
         todo.setAccountID(iamInfo.getAccountId());
         todo.setUserID(iamInfo.getUserId());
-        InMemoryTodoPersister.createTodo(todo);
-        publisher.publishTodoCreated(ctx, iamInfo.getAccountId(), iamInfo.getMembershipId(),todo);
-        return null;
+        Todo created = InMemoryTodoPersister.createTodo(todo);
+        publisher.publishTodoCreated(ctx, iamInfo.getAccountId(), iamInfo.getMembershipId(), created);
+        return created;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class FTodoServiceHandler implements FTodoService.Iface {
         IamUserInfoTuple iamInfo = getUserInfo(ctx);
         InMemoryTodoPersister.updateTodo(todo);
         publisher.publishTodoUpdated(ctx, iamInfo.getAccountId(), iamInfo.getMembershipId(), todo);
-        return null;
+        return todo;
     }
 
     protected IamUserInfoTuple getUserInfo(FContext ctx) throws TException {
