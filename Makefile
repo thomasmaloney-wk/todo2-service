@@ -5,3 +5,7 @@ clean:
 
 generate: clean
 	frugal -out $(JAVA) --gen=java:generated_annotations=undated todo.frugal
+
+serve:
+	mvn install
+	mvn exec:java -Dexec.mainClass=com.workiva.todo2.NatsServer
