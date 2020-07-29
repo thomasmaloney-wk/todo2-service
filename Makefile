@@ -9,3 +9,8 @@ generate: clean
 serve:
 	mvn install
 	mvn exec:java -Dexec.mainClass=com.workiva.todo2.NatsServer
+
+serve_unsafe:
+	mvn install
+	IAM_UNSAFE=true
+	mvn exec:java -Dexec.mainClass=com.workiva.todo2.NatsServer
